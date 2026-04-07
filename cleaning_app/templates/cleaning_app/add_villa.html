@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Add Villa - AquaTrack Pro{% endblock %}
+
+{% block content %}
+<div class="page-header animate-fade-in">
+    <div>
+        <h1>Add New Villa</h1>
+        <p style="color: var(--text-muted);">Register a new property for pool tracking.</p>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">Back to Dashboard</a>
+</div>
+
+<div class="glass-card animate-fade-in delay-1" style="max-width: 600px;">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field.errors }}
+                {{ field }}
+                {% if field.help_text %}
+                    <span class="helptext">{{ field.help_text }}</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">Save Villa</button>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

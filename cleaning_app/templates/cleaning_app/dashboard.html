@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AquaTrack Pro{% endblock %}
+
+{% block content %}
+<div class="page-header animate-fade-in">
+    <div>
+        <h1>Dashboard</h1>
+        <p style="color: var(--text-muted);">Manage your villas and track cleaning records.</p>
+    </div>
+    <a href="{% url 'add_villa' %}" class="btn btn-primary">+ Add New Villa</a>
+</div>
+
+{% if villas %}
+    <div class="grid grid-cols-1 grid-cols-2 grid-cols-3 animate-fade-in delay-1">
+        {% for villa in villas %}
+            <a href="{% url 'villa_detail' villa.id %}" class="glass-card" style="display: block;">
+                <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">{{ villa.name }}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                    {{ villa.address|truncatechars:50 }}
+                </p>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                    <span class="badge">
+                        Records: {{ villa.cleaning_records.count }}
+                    </span>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">
+                        Added by {{ villa.added_by.username }}
+                    </span>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="glass-card animate-fade-in delay-1" style="text-align: center; padding: 4rem 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🏊‍♂️</div>
+        <h3>No Villas Yet</h3>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">You haven't added any villas to track.</p>
+        <a href="{% url 'add_villa' %}" class="btn btn-primary">Add Your First Villa</a>
+    </div>
+{% endif %}
+{% endblock %}
