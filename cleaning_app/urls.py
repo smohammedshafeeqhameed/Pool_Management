@@ -10,4 +10,6 @@ urlpatterns = [
     path('villa/add/', views.add_villa, name='add_villa'),
     path('villa/<int:villa_id>/', views.villa_detail, name='villa_detail'),
     path('villa/<int:villa_id>/add_cleaning/', views.add_cleaning_record, name='add_cleaning_record'),
+    path('villa/<int:villa_id>/payments/', views.manage_payments, name='manage_payments'),
+    path('payment/<int:payment_id>/update/', views.update_payment, name='update_payment'),
 ]

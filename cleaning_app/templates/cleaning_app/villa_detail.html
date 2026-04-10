@@ -15,7 +15,39 @@
     </div>
     <div style="display: flex; gap: 1rem;">
         <a href="{% url 'dashboard' %}" class="btn btn-outline">Back</a>
+        <a href="{% url 'manage_payments' villa.id %}" class="btn btn-outline" style="border-color: var(--secondary); color: var(--secondary);">Manage Payments</a>
         <a href="{% url 'add_cleaning_record' villa.id %}" class="btn btn-primary">+ Log Cleaning</a>
+    </div>
+</div>
+
+<!-- Payment Status Section -->
+<div class="grid grid-cols-1 animate-fade-in delay-1" style="margin-bottom: 2rem;">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.5rem;">Recent Payments</h2>
+            <a href="{% url 'manage_payments' villa.id %}" style="font-size: 0.9rem;">View All</a>
+        </div>
+        
+        {% if payments %}
+            <div style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem;">
+                {% for payment in payments %}
+                <div style="min-width: 150px; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">{{ payment.month_year|date:"M Y" }}</div>
+                    <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">{{ payment.amount_paid }} AED</div>
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <span class="badge" style="font-size: 0.7rem; {% if payment.bill_given %}background: rgba(34, 197, 94, 0.1); color: #22c55e;{% else %}background: rgba(244, 63, 94, 0.1); color: var(--accent);{% endif %}">
+                            Bill: {% if payment.bill_given %}✓{% else %}✗{% endif %}
+                        </span>
+                        <span class="badge" style="font-size: 0.7rem; {% if payment.is_paid %}background: rgba(34, 197, 94, 0.1); color: #22c55e;{% else %}background: rgba(244, 63, 94, 0.1); color: var(--accent);{% endif %}">
+                            Paid: {% if payment.is_paid %}✓{% else %}✗{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: var(--text-muted); text-align: center;">No recent payment records.</p>
+        {% endif %}
     </div>
 </div>
 

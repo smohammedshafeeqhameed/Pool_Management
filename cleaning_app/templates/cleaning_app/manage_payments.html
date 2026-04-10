@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Payments - {{ villa.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header animate-fade-in">
+    <div>
+        <h1>Payment Management</h1>
+        <p style="color: var(--text-muted);">Villa: <strong>{{ villa.name }}</strong></p>
+    </div>
+    <a href="{% url 'villa_detail' villa.id %}" class="btn btn-outline">Back to Villa</a>
+</div>
+
+<div class="grid grid-cols-1 grid-cols-2 animate-fade-in delay-1">
+    <!-- Payment History -->
+    <div class="glass-card">
+        <h2 style="margin-bottom: 1.5rem;">Payment History</h2>
+        {% if payments %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--glass-border);">
+                            <th style="padding: 1rem; color: var(--text-muted);">Month</th>
+                            <th style="padding: 1rem; color: var(--text-muted);">Amount</th>
+                            <th style="padding: 1rem; color: var(--text-muted);">Bill Given</th>
+                            <th style="padding: 1rem; color: var(--text-muted);">Paid Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr style="border-bottom: 1px solid var(--glass-border);">
+                            <td style="padding: 1rem;">{{ payment.month_year|date:"F Y" }}</td>
+                            <td style="padding: 1rem;">
+                                <form action="{% url 'update_payment' payment.id %}" method="POST" style="display: flex; gap: 0.5rem; align-items: center;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="update_amount">
+                                    <input type="number" name="amount" value="{{ payment.amount_paid }}" step="0.01" class="form-input" style="padding: 0.4rem; width: 100px;">
+                                    <button type="submit" class="btn" style="padding: 0.4rem; font-size: 0.8rem; background: var(--secondary);">✓</button>
+                                </form>
+                            </td>
+                            <td style="padding: 1rem;">
+                                <form action="{% url 'update_payment' payment.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="toggle_bill">
+                                    <button type="submit" class="badge" style="cursor: pointer; border: none; {% if payment.bill_given %}background: rgba(34, 197, 94, 0.2); color: #22c55e;{% else %}background: rgba(244, 63, 94, 0.2); color: var(--accent);{% endif %}">
+                                        {% if payment.bill_given %}Given{% else %}Not Given{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                            <td style="padding: 1rem;">
+                                <form action="{% url 'update_payment' payment.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="toggle_paid">
+                                    <button type="submit" class="badge" style="cursor: pointer; border: none; {% if payment.is_paid %}background: rgba(34, 197, 94, 0.2); color: #22c55e;{% else %}background: rgba(244, 63, 94, 0.2); color: var(--accent);{% endif %}">
+                                        {% if payment.is_paid %}Paid{% else %}Unpaid{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p style="color: var(--text-muted); text-align: center; padding: 2rem;">No payment records found.</p>
+        {% endif %}
+    </div>
+
+    <!-- Add New Record -->
+    <div class="glass-card">
+        <h2 style="margin-bottom: 1.5rem;">Log New Payment</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.month_year.id_for_label }}">Select Month/Date</label>
+                {{ form.month_year }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.amount_paid.id_for_label }}">Amount Paid</label>
+                {{ form.amount_paid }}
+            </div>
+            <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    {{ form.bill_given }} Bill Given?
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    {{ form.is_paid }} Mark as Paid?
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Add Payment Record</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

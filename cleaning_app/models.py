@@ -21,5 +21,17 @@ class CleaningRecord(models.Model):
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+class PaymentRecord(models.Model):
+    villa = models.ForeignKey(Villa, on_delete=models.CASCADE, related_name='payment_records')
+    month_year = models.DateField(help_text="First day of the month representing the billing period")
+    bill_given = models.BooleanField(default=False)
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_paid = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('villa', 'month_year')
+        ordering = ['-month_year']
+
     def __str__(self):
-        return f"{self.villa.name} - {self.date}"
+        return f"{self.villa.name} - {self.month_year.strftime('%B %Y')}"
