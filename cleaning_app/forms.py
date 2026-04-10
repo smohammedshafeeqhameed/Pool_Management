@@ -4,9 +4,10 @@ from .models import Villa, CleaningRecord, PaymentRecord
 class VillaForm(forms.ModelForm):
     class Meta:
         model = Villa
-        fields = ['name', 'address', 'pool_size']
+        fields = ['name', 'phone_number', 'address', 'pool_size']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Villa Name'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g., 555-0199'}),
             'address': forms.Textarea(attrs={'class': 'form-input', 'rows': 3, 'placeholder': 'Address'}),
             'pool_size': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g., 20x40 feet'}),
         }

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 class Villa(models.Model):
     name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=15, blank=True, help_text="Contact phone number")
     address = models.TextField()
     pool_size = models.CharField(max_length=50, blank=True, help_text="e.g., 20x40 feet or 10,000 gallons")
     added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='villas')

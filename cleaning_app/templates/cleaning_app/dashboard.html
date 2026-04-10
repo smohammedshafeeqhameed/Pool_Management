@@ -6,37 +6,35 @@
 <div class="page-header animate-fade-in">
     <div>
         <h1>Dashboard</h1>
-        <p style="color: var(--text-muted);">Manage your villas and track cleaning records.</p>
+        <p style="color: var(--text-muted);">Manage your villas and track payments.</p>
     </div>
-    <a href="{% url 'add_villa' %}" class="btn btn-primary">+ Add New Villa</a>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <form method="GET" style="display: flex; gap: 0.5rem; align-items: center;">
+            <label for="payment_filter" style="color: var(--text-muted); font-size: 0.9rem; white-space: nowrap;">Current Month Status:</label>
+            <select name="payment_filter" id="payment_filter" class="form-input" style="padding: 0.4rem; font-size: 0.9rem;" onchange="this.form.submit()">
+                <option value="all" {% if payment_filter == 'all' %}selected{% endif %}>All Villas</option>
+                <option value="bg_paid" {% if payment_filter == 'bg_paid' %}selected{% endif %}>Bill given and amount paid</option>
+                <option value="bg_unpaid" {% if payment_filter == 'bg_unpaid' %}selected{% endif %}>Bill given and amount not paid</option>
+                <option value="bng_unpaid" {% if payment_filter == 'bng_unpaid' %}selected{% endif %}>Bill not given amount not paid</option>
+            </select>
+        </form>
+        <a href="{% url 'add_villa' %}" class="btn btn-primary">+ Add New Villa</a>
+    </div>
 </div>
 
-{% if villas %}
-    <div class="grid grid-cols-1 grid-cols-2 grid-cols-3 animate-fade-in delay-1">
-        {% for villa in villas %}
-            <a href="{% url 'villa_detail' villa.id %}" class="glass-card" style="display: block;">
-                <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">{{ villa.name }}</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
-                    {{ villa.address|truncatechars:50 }}
-                </p>
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
-                    <span class="badge">
-                        Records: {{ villa.cleaning_records.count }}
-                    </span>
-                    <span style="font-size: 0.8rem; color: var(--text-muted);">
-                        Added by {{ villa.added_by.username }}
-                    </span>
-                </div>
-            </a>
-        {% endfor %}
-    </div>
+{% if payment_filter == 'default_split' %}
+    {% include 'cleaning_app/components/_villa_table.html' with display_villas=villas_bg_unpaid table_title='Bill Given & Amount Not Paid' %}
+    {% include 'cleaning_app/components/_villa_table.html' with display_villas=villas_bng_unpaid table_title='Bill Not Given & Amount Not Paid' %}
 {% else %}
-    <div class="glass-card animate-fade-in delay-1" style="text-align: center; padding: 4rem 2rem;">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🏊‍♂️</div>
-        <h3>No Villas Yet</h3>
-        <p style="color: var(--text-muted); margin-bottom: 2rem;">You haven't added any villas to track.</p>
-        <a href="{% url 'add_villa' %}" class="btn btn-primary">Add Your First Villa</a>
-    </div>
+    {% if villas %}
+        {% include 'cleaning_app/components/_villa_table.html' with display_villas=villas %}
+    {% else %}
+        <div class="glass-card animate-fade-in delay-1" style="text-align: center; padding: 4rem 2rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🏊‍♂️</div>
+            <h3>No Villas Yet</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">You haven't added any villas or none match this filter.</p>
+            <a href="{% url 'add_villa' %}" class="btn btn-primary">Add Your First Villa</a>
+        </div>
+    {% endif %}
 {% endif %}
 {% endblock %}

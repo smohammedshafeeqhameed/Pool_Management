@@ -8,6 +8,9 @@
         <h1>{{ villa.name }}</h1>
         <p style="color: var(--text-muted);">
             <span style="margin-right: 1rem;">📍 {{ villa.address }}</span>
+            {% if villa.phone_number %}
+                <span style="margin-right: 1rem;">📞 {{ villa.phone_number }}</span>
+            {% endif %}
             {% if villa.pool_size %}
                 <span>📐 {{ villa.pool_size }}</span>
             {% endif %}
@@ -16,7 +19,6 @@
     <div style="display: flex; gap: 1rem;">
         <a href="{% url 'dashboard' %}" class="btn btn-outline">Back</a>
         <a href="{% url 'manage_payments' villa.id %}" class="btn btn-outline" style="border-color: var(--secondary); color: var(--secondary);">Manage Payments</a>
-        <a href="{% url 'add_cleaning_record' villa.id %}" class="btn btn-primary">+ Log Cleaning</a>
     </div>
 </div>
 
@@ -51,59 +53,4 @@
     </div>
 </div>
 
-<div class="grid grid-cols-1 animate-fade-in delay-1">
-    <div class="glass-card">
-        <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;">Cleaning History</h2>
-        
-        {% if records %}
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead>
-                        <tr style="border-bottom: 1px solid var(--glass-border);">
-                            <th style="padding: 1rem; color: var(--text-muted); font-weight: 500;">Date</th>
-                            <th style="padding: 1rem; color: var(--text-muted); font-weight: 500;">Cleaner</th>
-                            <th style="padding: 1rem; color: var(--text-muted); font-weight: 500;">pH Level</th>
-                            <th style="padding: 1rem; color: var(--text-muted); font-weight: 500;">Chlorine (ppm)</th>
-                            <th style="padding: 1rem; color: var(--text-muted); font-weight: 500;">Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in records %}
-                        <tr style="border-bottom: 1px solid var(--glass-border); transition: background-color 0.2s;">
-                            <td style="padding: 1rem;">{{ record.date }}</td>
-                            <td style="padding: 1rem;">{{ record.cleaner.username|default:"Unknown" }}</td>
-                            <td style="padding: 1rem;">
-                                {% if record.ph_level %}
-                                    <span class="badge" {% if record.ph_level < 7.2 or record.ph_level > 7.8 %}style="background: rgba(244, 63, 94, 0.2); color: var(--accent);"{% endif %}>
-                                        {{ record.ph_level }}
-                                    </span>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td style="padding: 1rem;">
-                                {% if record.chlorine_level %}
-                                    <span class="badge" {% if record.chlorine_level < 1.0 or record.chlorine_level > 3.0 %}style="background: rgba(244, 63, 94, 0.2); color: var(--accent);"{% endif %}>
-                                        {{ record.chlorine_level }}
-                                    </span>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td style="padding: 1rem; color: var(--text-muted); max-width: 300px;">
-                                {{ record.notes|default:"-" }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div style="text-align: center; padding: 2rem;">
-                <p style="color: var(--text-muted);">No cleaning records yet.</p>
-                <a href="{% url 'add_cleaning_record' villa.id %}" style="display: inline-block; margin-top: 1rem;">Log the first cleaning session</a>
-            </div>
-        {% endif %}
-    </div>
-</div>
 {% endblock %}

@@ -1,0 +1,63 @@
+{% if display_villas %}
+<div class="glass-card animate-fade-in delay-1" style="overflow-x: auto; padding: 0; margin-bottom: 2rem;">
+    {% if table_title %}
+        <h2 style="padding: 1.5rem; margin: 0; font-size: 1.25rem; border-bottom: 1px solid var(--glass-border);">{{ table_title }}</h2>
+    {% endif %}
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+            <tr style="border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.2);">
+                <th style="padding: 1rem 1.5rem; color: var(--text-muted);">Villa Info</th>
+                {% for m in months %}
+                    <th style="padding: 1rem; color: var(--text-muted); text-align: center;">{{ m|date:"M Y" }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for villa in display_villas %}
+            <tr style="border-bottom: 1px solid var(--glass-border); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                <td style="padding: 1.5rem;">
+                    <a href="{% url 'villa_detail' villa.id %}" style="display: block; text-decoration: none; color: inherit;">
+                        <strong style="font-size: 1.1rem; display: block; color: var(--text-color); margin-bottom: 0.2rem;">{{ villa.name }}</strong>
+                        {% if villa.phone_number %}
+                            <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.1rem;">📞 {{ villa.phone_number }}</span>
+                        {% endif %}
+                        <span style="font-size: 0.85rem; color: var(--text-muted); display: block;">📍 {{ villa.address|truncatechars:40 }}</span>
+                    </a>
+                </td>
+                {% for p_data in villa.recent_payments %}
+                    <td style="padding: 1rem; text-align: center; vertical-align: middle;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+                            <!-- Bill Toggle -->
+                            <form action="{% url 'toggle_dashboard_payment' villa.id %}" method="POST" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle_bill">
+                                <input type="hidden" name="month_year" value="{{ p_data.month|date:'Y-m-d' }}">
+                                <button type="submit" class="badge" title="Toggle Bill Status" style="cursor: pointer; border: none; width: 85px; font-weight: normal; {% if p_data.record and p_data.record.bill_given %}background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.3);{% else %}background: rgba(244, 63, 94, 0.1); color: var(--text-muted); border: 1px dashed rgba(244, 63, 94, 0.3);{% endif %}">
+                                    {% if p_data.record and p_data.record.bill_given %}Bill Given{% else %}No Bill{% endif %}
+                                </button>
+                            </form>
+                            <!-- Paid Toggle -->
+                            <form action="{% url 'toggle_dashboard_payment' villa.id %}" method="POST" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle_paid">
+                                <input type="hidden" name="month_year" value="{{ p_data.month|date:'Y-m-d' }}">
+                                <button type="submit" class="badge" title="Toggle Paid Status" style="cursor: pointer; border: none; width: 85px; font-weight: normal; {% if p_data.record and p_data.record.is_paid %}background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.3);{% else %}background: rgba(244, 63, 94, 0.1); color: var(--text-muted); border: 1px dashed rgba(244, 63, 94, 0.3);{% endif %}">
+                                    {% if p_data.record and p_data.record.is_paid %}Paid{% else %}Unpaid{% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    {% if table_title %}
+    <div class="glass-card animate-fade-in delay-1" style="text-align: center; padding: 2rem; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-color);">{{ table_title }}</h2>
+        <p style="color: var(--text-muted);">No villas found for this category.</p>
+    </div>
+    {% endif %}
+{% endif %}
