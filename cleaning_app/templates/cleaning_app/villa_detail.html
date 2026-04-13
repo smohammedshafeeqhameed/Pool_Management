@@ -7,16 +7,19 @@
     <div>
         <h1>{{ villa.name }}</h1>
         <p style="color: var(--text-muted);">
-            <span style="margin-right: 1rem;">📍 {{ villa.address }}</span>
-            {% if villa.phone_number %}
-                <span style="margin-right: 1rem;">📞 {{ villa.phone_number }}</span>
+            {% if villa.latitude and villa.longitude %}
+                <span style="margin-right: 1rem;">📍 
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ villa.latitude }},{{ villa.longitude }}" target="_blank" style="color: inherit; text-decoration: none;">
+                        {{ villa.latitude }}, {{ villa.longitude }}
+                    </a>
+                </span>
             {% endif %}
-            {% if villa.pool_size %}
-                <span>📐 {{ villa.pool_size }}</span>
+            {% if villa.phone_number %}
+                <span>📞 {{ villa.phone_number }}</span>
             {% endif %}
         </p>
     </div>
-    <div style="display: flex; gap: 1rem;">
+    <div class="villa-actions" style="display: flex; gap: 1rem;">
         <a href="{% url 'dashboard' %}" class="btn btn-outline">Back</a>
         <a href="{% url 'manage_payments' villa.id %}" class="btn btn-outline" style="border-color: var(--secondary); color: var(--secondary);">Manage Payments</a>
     </div>
@@ -33,18 +36,29 @@
         {% if payments %}
             <div style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem;">
                 {% for payment in payments %}
-                <div style="min-width: 150px; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
-                    <div style="font-weight: 600; margin-bottom: 0.5rem;">{{ payment.month_year|date:"M Y" }}</div>
-                    <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">{{ payment.amount_paid }} AED</div>
-                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                        <span class="badge" style="font-size: 0.7rem; {% if payment.bill_given %}background: rgba(34, 197, 94, 0.1); color: #22c55e;{% else %}background: rgba(244, 63, 94, 0.1); color: var(--accent);{% endif %}">
-                            Bill: {% if payment.bill_given %}✓{% else %}✗{% endif %}
-                        </span>
-                        <span class="badge" style="font-size: 0.7rem; {% if payment.is_paid %}background: rgba(34, 197, 94, 0.1); color: #22c55e;{% else %}background: rgba(244, 63, 94, 0.1); color: var(--accent);{% endif %}">
+                <div style="min-width: 180px; padding: 1.25rem; background: var(--bg-soft); border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">{{ payment.month_year|date:"M Y" }}</div>
+                    <div style="font-size: 1.1rem; font-weight: 700;">{{ payment.amount_paid }} AED</div>
+                    
+                    <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem;">
+                        {% if payment.payment_date %}
+                            <span>📅 {{ payment.payment_date|date:"d M Y" }}</span>
+                        {% endif %}
+                        {% if payment.received_from %}
+                            <span>👤 {{ payment.received_from }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div style="display: flex; gap: 0.25rem; margin-top: auto;">
+                        <span class="badge" style="font-size: 0.65rem; padding: 0.2rem 0.5rem; {% if payment.is_paid %}background: #DCFCE7; color: #15803D;{% else %}background: #FEE2E2; color: #DC2626;{% endif %}">
                             Paid: {% if payment.is_paid %}✓{% else %}✗{% endif %}
+                        </span>
+                        <span class="badge" style="font-size: 0.65rem; padding: 0.2rem 0.5rem; {% if payment.bill_given %}background: #DBEAFE; color: #1E40AF;{% else %}background: #F3F4F6; color: var(--text-muted);{% endif %}">
+                            Bill: {% if payment.bill_given %}✓{% else %}✗{% endif %}
                         </span>
                     </div>
                 </div>
+
                 {% endfor %}
             </div>
         {% else %}

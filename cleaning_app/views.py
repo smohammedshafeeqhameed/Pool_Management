@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from .models import Villa, CleaningRecord, PaymentRecord
-from .forms import VillaForm, CleaningRecordForm, PaymentRecordForm
+from .models import Villa, PaymentRecord
+from .forms import VillaForm, PaymentPeriodForm
 import datetime
 
 def register(request):
@@ -20,93 +20,84 @@ def register(request):
 @login_required
 def dashboard(request):
     today = datetime.date.today()
-    current_month = today.replace(day=1)
+    selected_y = request.GET.get('selected_year')
+    y_val = int(selected_y) if selected_y and selected_y.isdigit() else today.year
     
-    # Only show current month based on user request
-    months_to_show = [current_month]
+    selected_months = request.GET.getlist('selected_months')
+    if not selected_months:
+        selected_months = [str(today.month)]
+        
+    months_to_show = []
+    for m_str in selected_months:
+        if m_str.isdigit():
+            m_val = int(m_str)
+            if 1 <= m_val <= 12:
+                months_to_show.append(datetime.date(y_val, m_val, 1))
+    months_to_show.sort()
+        
+    months_choices = [
+        (1, 'January'), (2, 'February'), (3, 'March'), (4, 'April'),
+        (5, 'May'), (6, 'June'), (7, 'July'), (8, 'August'),
+        (9, 'September'), (10, 'October'), (11, 'November'), (12, 'December')
+    ]
+    years_choices = list(range(today.year - 3, today.year + 2))
     
-    payment_filter = request.GET.get('payment_filter')
-    if payment_filter is None:
-        payment_filter = 'default_split'
+    payment_status = request.GET.getlist('payment_status')
+    bill_given = request.GET.getlist('bill_given')
     
     villas_query = Villa.objects.all().order_by('-created_at')
+    all_villas = list(villas_query.prefetch_related('payment_records'))
     
-    # Define variables to avoid UnboundLocalError
     villas = []
-    villas_bg_unpaid = []
-    villas_bng_unpaid = []
     
-    # Process Filter based on current month
-    from django.db.models import Q
-    
-    if payment_filter == 'default_split':
-        # Split into two lists
-        q_bg_unpaid = villas_query.filter(
-            payment_records__month_year=current_month, 
-            payment_records__is_paid=False, 
-            payment_records__bill_given=True
-        )
-        q_bng_unpaid = villas_query.exclude(
-            payment_records__month_year=current_month, payment_records__bill_given=True
-        ).exclude(
-            payment_records__month_year=current_month, payment_records__is_paid=True
-        )
+    for villa in all_villas:
+        villa.recent_payments = []
+        payment_dict = {p.month_year: p for p in villa.payment_records.all()}
+        for m in reversed(months_to_show):
+            villa.recent_payments.append({'month': m, 'record': payment_dict.get(m, None)})
+            
+        villa_matches = False
         
-        villas_bg_unpaid = list(q_bg_unpaid.prefetch_related('payment_records'))
-        villas_bng_unpaid = list(q_bng_unpaid.prefetch_related('payment_records'))
-        
-        # Attach recent payments to split lists
-        for v_list in [villas_bg_unpaid, villas_bng_unpaid]:
-            for villa in v_list:
-                villa.recent_payments = []
-                payment_dict = {p.month_year: p for p in villa.payment_records.all()}
-                for m in reversed(months_to_show):
-                    villa.recent_payments.append({'month': m, 'record': payment_dict.get(m, None)})
-    elif payment_filter:
-        if payment_filter == 'bg_paid':
-            villas_query = villas_query.filter(
-                payment_records__month_year=current_month, 
-                payment_records__is_paid=True, 
-                payment_records__bill_given=True
-            )
-        elif payment_filter == 'bg_unpaid':
-            villas_query = villas_query.filter(
-                payment_records__month_year=current_month, 
-                payment_records__is_paid=False, 
-                payment_records__bill_given=True
-            )
-        elif payment_filter == 'bng_unpaid':
-            # Bill not given amount not paid: Either no record, or record with bill_given=False and is_paid=False
-            villas_query = villas_query.exclude(
-                payment_records__month_year=current_month, payment_records__bill_given=True
-            ).exclude(
-                payment_records__month_year=current_month, payment_records__is_paid=True
-            )
-        
-        villas = list(villas_query.prefetch_related('payment_records'))
-        
-        # Attach recent payments
-        for villa in villas:
-            villa.recent_payments = []
-            payment_dict = {p.month_year: p for p in villa.payment_records.all()}
-            for m in reversed(months_to_show):
-                villa.recent_payments.append({'month': m, 'record': payment_dict.get(m, None)})
-    else:
-        # e.g., 'all' or empty string
-        villas = list(villas_query.prefetch_related('payment_records'))
-        for villa in villas:
-            villa.recent_payments = []
-            payment_dict = {p.month_year: p for p in villa.payment_records.all()}
-            for m in reversed(months_to_show):
-                villa.recent_payments.append({'month': m, 'record': payment_dict.get(m, None)})
+        for m in months_to_show:
+            record = payment_dict.get(m, None)
+            
+            is_paid = record.is_paid if record else False
+            is_bg = record.bill_given if record else False
+            
+            match_ps = True
+            if payment_status:
+                if 'paid' in payment_status and 'not_paid' in payment_status:
+                    match_ps = True
+                elif 'paid' in payment_status:
+                    match_ps = is_paid
+                elif 'not_paid' in payment_status:
+                    match_ps = not is_paid
+
+            match_bg = True
+            if bill_given:
+                if 'given' in bill_given and 'not_given' in bill_given:
+                    match_bg = True
+                elif 'given' in bill_given:
+                    match_bg = is_bg
+                elif 'not_given' in bill_given:
+                    match_bg = not is_bg
+                    
+            if match_ps and match_bg:
+                villa_matches = True
+                break
+                
+        if villa_matches:
+            villas.append(villa)
 
     return render(request, 'cleaning_app/dashboard.html', {
         'villas': villas,
-        'villas_bg_unpaid': villas_bg_unpaid,
-        'villas_bng_unpaid': villas_bng_unpaid,
         'months': list(reversed(months_to_show)),  # pass the header months
-        'current_month': current_month,
-        'payment_filter': payment_filter
+        'selected_y': y_val,
+        'selected_months': selected_months,
+        'payment_status': payment_status,
+        'bill_given': bill_given,
+        'months_choices': months_choices,
+        'years_choices': years_choices
     })
 
 @login_required
@@ -137,15 +128,42 @@ def manage_payments(request, villa_id):
     payments = villa.payment_records.all()
     
     if request.method == 'POST':
-        form = PaymentRecordForm(request.POST)
+        form = PaymentPeriodForm(request.POST)
         if form.is_valid():
-            payment = form.save(commit=False)
-            payment.villa = villa
-            payment.save()
+            start_month = form.cleaned_data.get('start_month')
+            end_month = form.cleaned_data.get('end_month')
+            total_amount = form.cleaned_data.get('total_amount', 0)
+            
+            # Calculate months between start and end inclusive
+            months_to_update = []
+            curr = start_month
+            while curr <= end_month:
+                months_to_update.append(curr)
+                # Next month
+                if curr.month == 12:
+                    curr = datetime.date(curr.year + 1, 1, 1)
+                else:
+                    curr = datetime.date(curr.year, curr.month + 1, 1)
+            
+            count = len(months_to_update)
+            amount_per_month = total_amount / count if count > 0 else 0
+            
+            for month_date in months_to_update:
+                PaymentRecord.objects.update_or_create(
+                    villa=villa,
+                    month_year=month_date,
+                    defaults={
+                        'bill_given': form.cleaned_data.get('bill_given'),
+                        'amount_paid': amount_per_month,
+                        'is_paid': form.cleaned_data.get('is_paid'),
+                        'payment_date': form.cleaned_data.get('payment_date'),
+                        'received_from': form.cleaned_data.get('received_from'),
+                    }
+                )
             return redirect('manage_payments', villa_id=villa.id)
     else:
-        form = PaymentRecordForm()
-        
+        form = PaymentPeriodForm()
+
     return render(request, 'cleaning_app/manage_payments.html', {
         'villa': villa,
         'payments': payments,
@@ -176,11 +194,17 @@ def toggle_dashboard_payment(request, villa_id):
         villa = get_object_or_404(Villa, pk=villa_id)
         action = request.POST.get('action')
         month_str = request.POST.get('month_year')
+        
+        url = reverse('dashboard')
+        query_string = request.GET.urlencode()
+        if query_string:
+            url += '?' + query_string
+
         try:
             year, month, day = map(int, month_str.split('-'))
             month_date = datetime.date(year, month, day)
         except:
-            return redirect('dashboard')
+            return redirect(url)
             
         payment, created = PaymentRecord.objects.get_or_create(
             villa=villa,
@@ -193,6 +217,8 @@ def toggle_dashboard_payment(request, villa_id):
             payment.is_paid = not payment.is_paid
         
         payment.save()
+        
+        return redirect(url)
         
     return redirect('dashboard')
 

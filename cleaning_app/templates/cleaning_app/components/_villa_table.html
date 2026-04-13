@@ -21,7 +21,9 @@
                         {% if villa.phone_number %}
                             <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.1rem;">📞 {{ villa.phone_number }}</span>
                         {% endif %}
-                        <span style="font-size: 0.85rem; color: var(--text-muted); display: block;">📍 {{ villa.address|truncatechars:40 }}</span>
+                        {% if villa.latitude and villa.longitude %}
+                            <span style="font-size: 0.85rem; color: var(--text-muted); display: block;">📍 {{ villa.latitude|floatformat:4 }}, {{ villa.longitude|floatformat:4 }}</span>
+                        {% endif %}
                     </a>
                 </td>
                 {% for p_data in villa.recent_payments %}
