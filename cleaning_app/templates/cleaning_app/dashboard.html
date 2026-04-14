@@ -1,93 +1,116 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - AquaTrack Pro{% endblock %}
+{% block title %}Dashboard — AquaTrack Pro{% endblock %}
 
 {% block content %}
-<div class="page-header animate-fade-in">
-    <div>
-        <h1>Dashboard</h1>
-        <p style="color: var(--text-muted);">Manage your villas and track payments.</p>
-    </div>
-    <div class="header-actions" style="flex-direction: column; align-items: flex-end;">
-        <div class="filter-controls" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-end;">
-            <div class="filter-group" style="display: flex; gap: 0.5rem; align-items: center;">
-                <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">Year:</span>
-                <select class="chip" style="appearance: auto; padding-right: 1.5rem; outline: none; border-radius: 9999px;" onchange="updateFilter('selected_year', this.value)">
-                    {% for y in years_choices %}
-                        <option value="{{ y }}" {% if selected_y == y %}selected{% endif %}>{{ y }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="filter-group" style="display: flex; gap: 0.5rem; align-items: flex-start; max-width: 100%;">
-                <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; margin-top: 0.6rem;">Months:</span>
-                
-                <div class="multi-select-container">
-                    <div class="multi-select-box" onclick="document.getElementById('monthOptions').classList.toggle('show')">
-                        <div id="dynamic-chips" style="display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center;">
-                            {% if selected_months %}
-                                {% for m_num, m_name in months_choices %}
-                                    {% if m_num|stringformat:'s' in selected_months %}
-                                        <span class="chip active" onclick="event.stopPropagation(); toggleFilter('selected_months', '{{ m_num }}')" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border: none; margin: 0;">
-                                            {{ m_name|slice:":3" }} <span class="chip-remove">×</span>
-                                        </span>
-                                    {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                <span style="color: var(--text-muted); padding: 0.2rem 0.2rem; font-size: 0.85rem;">Select Months...</span>
-                            {% endif %}
-                        </div>
-                        <span style="margin-left: auto; color: var(--text-muted); font-size: 0.8rem; padding-right: 0.3rem;">▼</span>
-                    </div>
-                    
-                    <div id="monthOptions" class="multi-select-dropdown" style="display: none;">
-                        <div style="max-height: 200px; overflow-y: auto; padding: 0.5rem 0;">
-                            {% for m_num, m_name in months_choices %}
-                                <label class="dropdown-item">
-                                    <input type="checkbox" class="month-checkbox" value="{{ m_num }}" data-name="{{ m_name|slice:':3' }}" {% if m_num|stringformat:'s' in selected_months %}checked{% endif %} style="margin:0; width:auto; cursor:pointer;" onchange="syncVisualChips()">
-                                    {{ m_name }}
-                                </label>
-                            {% endfor %}
-                        </div>
-                        <div style="padding: 0.5rem; border-top: 1px solid var(--border-color); text-align: right; background: var(--bg-soft); border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md);">
-                            <button type="button" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.85rem;" onclick="applyMonths()">Apply</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="filter-group" style="display: flex; gap: 0.5rem; align-items: center;">
-                <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">Payment Status:</span>
-                <button type="button" class="chip {% if 'paid' in payment_status %}active{% endif %}" onclick="toggleFilter('payment_status', 'paid')">
-                    Paid {% if 'paid' in payment_status %}<span class="chip-remove">×</span>{% endif %}
-                </button>
-                <button type="button" class="chip {% if 'not_paid' in payment_status %}active{% endif %}" onclick="toggleFilter('payment_status', 'not_paid')">
-                    Not Paid {% if 'not_paid' in payment_status %}<span class="chip-remove">×</span>{% endif %}
-                </button>
-            </div>
-            
-            <div class="filter-group" style="display: flex; gap: 0.5rem; align-items: center;">
-                <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">Bill Given:</span>
-                <button type="button" class="chip {% if 'given' in bill_given %}active{% endif %}" onclick="toggleFilter('bill_given', 'given')">
-                    Given {% if 'given' in bill_given %}<span class="chip-remove">×</span>{% endif %}
-                </button>
-                <button type="button" class="chip {% if 'not_given' in bill_given %}active{% endif %}" onclick="toggleFilter('bill_given', 'not_given')">
-                    Not Given {% if 'not_given' in bill_given %}<span class="chip-remove">×</span>{% endif %}
-                </button>
-            </div>
-        </div>
-        <a href="{% url 'add_villa' %}" class="btn btn-primary" style="margin-top: 1rem;">+ Add New Villa</a>
-    </div>
 
+<!-- Page Header -->
+<div class="page-header animate-fade-in">
+    <div class="page-header-text">
+        <h1>Dashboard</h1>
+        <p>Manage your villas and track payments.</p>
+    </div>
+    <a href="{% url 'add_villa' %}" class="btn btn-primary" id="add-villa-btn">
+        + Add New Villa
+    </a>
 </div>
 
+<!-- Filter Bar -->
+<div class="filter-bar animate-fade-in delay-1">
+
+    <!-- Year -->
+    <div class="filter-group">
+        <span class="filter-label">Year</span>
+        <select class="chip" style="appearance: auto; padding-right: 1.5rem; outline: none; border-radius: 9999px; min-height:34px;"
+                onchange="updateFilter('selected_year', this.value)">
+            {% for y in years_choices %}
+                <option value="{{ y }}" {% if selected_y == y %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Months multi-select -->
+    <div class="filter-group" style="align-items: flex-start;">
+        <span class="filter-label" style="margin-top: 0.55rem;">Months</span>
+        <div class="multi-select-container">
+            <div class="multi-select-box" onclick="document.getElementById('monthOptions').classList.toggle('show')">
+                <div id="dynamic-chips" style="display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center;">
+                    {% if selected_months %}
+                        {% for m_num, m_name in months_choices %}
+                            {% if m_num|stringformat:'s' in selected_months %}
+                                <span class="chip active"
+                                      onclick="event.stopPropagation(); toggleFilter('selected_months', '{{ m_num }}')"
+                                      style="padding: 0.2rem 0.5rem; font-size: 0.75rem; min-height: 26px;">
+                                    {{ m_name|slice:":3" }} <span class="chip-remove">×</span>
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span style="color: var(--text-muted); font-size: 0.82rem; padding: 0.1rem 0.2rem;">Select months…</span>
+                    {% endif %}
+                </div>
+                <span style="margin-left: auto; color: var(--text-muted); font-size: 0.75rem; padding-left: 0.3rem; flex-shrink:0;">▼</span>
+            </div>
+
+            <div id="monthOptions" class="multi-select-dropdown">
+                <div style="max-height: 200px; overflow-y: auto; padding: 0.4rem 0;">
+                    {% for m_num, m_name in months_choices %}
+                        <label class="dropdown-item">
+                            <input type="checkbox" class="month-checkbox"
+                                   value="{{ m_num }}"
+                                   data-name="{{ m_name|slice:':3' }}"
+                                   {% if m_num|stringformat:'s' in selected_months %}checked{% endif %}
+                                   onchange="syncVisualChips()">
+                            {{ m_name }}
+                        </label>
+                    {% endfor %}
+                </div>
+                <div style="padding: 0.5rem 0.75rem; border-top: 1px solid var(--border); text-align: right; background: var(--bg); border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius);">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="applyMonths()">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment status -->
+    <div class="filter-group">
+        <span class="filter-label">Payment</span>
+        <button type="button" class="chip {% if 'paid' in payment_status %}active{% endif %}"
+                onclick="toggleFilter('payment_status', 'paid')">
+            Paid {% if 'paid' in payment_status %}<span class="chip-remove">×</span>{% endif %}
+        </button>
+        <button type="button" class="chip {% if 'not_paid' in payment_status %}active{% endif %}"
+                onclick="toggleFilter('payment_status', 'not_paid')">
+            Not Paid {% if 'not_paid' in payment_status %}<span class="chip-remove">×</span>{% endif %}
+        </button>
+    </div>
+
+    <!-- Bill given -->
+    <div class="filter-group">
+        <span class="filter-label">Bill</span>
+        <button type="button" class="chip {% if 'given' in bill_given %}active{% endif %}"
+                onclick="toggleFilter('bill_given', 'given')">
+            Given {% if 'given' in bill_given %}<span class="chip-remove">×</span>{% endif %}
+        </button>
+        <button type="button" class="chip {% if 'not_given' in bill_given %}active{% endif %}"
+                onclick="toggleFilter('bill_given', 'not_given')">
+            Not Given {% if 'not_given' in bill_given %}<span class="chip-remove">×</span>{% endif %}
+        </button>
+    </div>
+
+</div><!-- /.filter-bar -->
+
+<!-- Villa Table or Empty State -->
 {% if villas %}
     {% include 'cleaning_app/components/_villa_table.html' with display_villas=villas %}
 {% else %}
-    <div class="glass-card animate-fade-in delay-1" style="text-align: center; padding: 4rem 2rem;">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🏊‍♂️</div>
-        <h3>No Villas Yet</h3>
-        <p style="color: var(--text-muted); margin-bottom: 2rem;">You haven't added any villas or none match this filter.</p>
-        <a href="{% url 'add_villa' %}" class="btn btn-primary">Add Your First Villa</a>
+    <div class="glass-card animate-fade-in delay-1">
+        <div class="empty-state">
+            <span class="empty-icon">🏊</span>
+            <h3>No Villas Found</h3>
+            <p>You haven't added any villas, or none match the current filters.</p>
+            <a href="{% url 'add_villa' %}" class="btn btn-primary">Add Your First Villa</a>
+        </div>
     </div>
 {% endif %}
 
@@ -95,7 +118,6 @@
 function toggleFilter(type, value) {
     const urlParams = new URLSearchParams(window.location.search);
     let values = urlParams.getAll(type);
-    
     if (values.includes(value)) {
         values = values.filter(v => v !== value);
         urlParams.delete(type);
@@ -103,7 +125,6 @@ function toggleFilter(type, value) {
     } else {
         urlParams.append(type, value);
     }
-    
     window.location.search = urlParams.toString();
 }
 
@@ -116,19 +137,11 @@ function updateFilter(key, value) {
 function applyMonths() {
     const checkboxes = document.querySelectorAll('.month-checkbox');
     const urlParams = new URLSearchParams(window.location.search);
-    
     urlParams.delete('selected_months');
-    checkboxes.forEach(cb => {
-        if (cb.checked) {
-            urlParams.append('selected_months', cb.value);
-        }
-    });
-    
-    // Default fallback if everything is unchecked
+    checkboxes.forEach(cb => { if (cb.checked) urlParams.append('selected_months', cb.value); });
     if (!urlParams.has('selected_months')) {
         urlParams.append('selected_months', new Date().getMonth() + 1);
     }
-    
     window.location.search = urlParams.toString();
 }
 
@@ -140,42 +153,35 @@ function syncVisualChips() {
     checkboxes.forEach(cb => {
         if (cb.checked) {
             any = true;
-            html += `
-                <span class="chip active" onclick="event.stopPropagation(); var e = document.querySelector('.month-checkbox[value=\\'${cb.value}\\']'); e.checked = false; syncVisualChips(); applyMonths();" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border: none; margin: 0;">
-                    ${cb.dataset.name} <span class="chip-remove">×</span>
-                </span>
-            `;
+            html += `<span class="chip active" onclick="event.stopPropagation(); var e = document.querySelector('.month-checkbox[value=\\'${cb.value}\\']'); e.checked = false; syncVisualChips(); applyMonths();" style="padding:0.2rem 0.5rem; font-size:0.75rem; min-height:26px;">${cb.dataset.name} <span class="chip-remove">×</span></span>`;
         }
     });
     if (!any) {
-        html = '<span style="color: var(--text-muted); padding: 0.2rem 0.2rem; font-size: 0.85rem;">Select Months...</span>';
+        html = '<span style="color:var(--text-muted);font-size:0.82rem;padding:0.1rem 0.2rem;">Select months…</span>';
     }
     container.innerHTML = html;
 }
 
-// Close dropdown when clicking outside and automatically apply if changed
 let originalCheckedState = null;
 document.addEventListener('click', function(event) {
     const container = document.querySelector('.multi-select-container');
     const dropdown = document.getElementById('monthOptions');
-    
-    // Initialize original state when opening
     if (container && container.contains(event.target)) {
         if (!originalCheckedState) {
             originalCheckedState = Array.from(document.querySelectorAll('.month-checkbox')).map(cb => cb.checked);
         }
     }
-
     if (container && dropdown && !container.contains(event.target)) {
         if (dropdown.classList.contains('show')) {
             dropdown.classList.remove('show');
-            // Auto apply on click outside if anything changed
             const currentState = Array.from(document.querySelectorAll('.month-checkbox')).map(cb => cb.checked);
             if (originalCheckedState && JSON.stringify(originalCheckedState) !== JSON.stringify(currentState)) {
                 applyMonths();
             }
+            originalCheckedState = null;
         }
     }
 });
 </script>
+
 {% endblock %}

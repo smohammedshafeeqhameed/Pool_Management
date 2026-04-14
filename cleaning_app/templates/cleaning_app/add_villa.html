@@ -1,36 +1,46 @@
 {% extends "base.html" %}
 
-{% block title %}Add Villa - AquaTrack Pro{% endblock %}
+{% block title %}Add Villa — AquaTrack Pro{% endblock %}
 
 {% block content %}
+
+<a href="{% url 'dashboard' %}" class="back-link animate-fade-in">Back to Dashboard</a>
+
 <div class="page-header animate-fade-in">
-    <div>
+    <div class="page-header-text">
         <h1>Add New Villa</h1>
-        <p style="color: var(--text-muted);">Register a new property for pool tracking.</p>
+        <p>Register a new property for pool tracking.</p>
     </div>
-    <a href="{% url 'dashboard' %}" class="btn btn-outline">Back to Dashboard</a>
 </div>
 
-<div class="glass-card animate-fade-in delay-1" style="max-width: 600px;">
-    <form method="post">
+<div class="glass-card animate-fade-in delay-1" style="max-width: 560px;">
+    <form method="post" novalidate>
         {% csrf_token %}
-        {{ form.non_field_errors }}
-        
+
+        {% if form.non_field_errors %}
+            <div class="form-error-box">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+        {% endif %}
+
         {% for field in form %}
             <div class="form-group">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field.errors }}
+                {% if field.errors %}
+                    <ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                {% endif %}
                 {{ field }}
                 {% if field.help_text %}
                     <span class="helptext">{{ field.help_text }}</span>
                 {% endif %}
             </div>
         {% endfor %}
-        
-        <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
-            <button type="submit" class="btn btn-primary">Save Villa</button>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancel</a>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">Save Villa</button>
+            <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-lg" style="flex:1;">Cancel</a>
         </div>
     </form>
 </div>
+
 {% endblock %}

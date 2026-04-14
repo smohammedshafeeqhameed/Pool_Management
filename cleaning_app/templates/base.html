@@ -4,31 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Pool Manager{% endblock %}</title>
-    
-    <!-- Google Fonts -->
+    <meta name="description" content="AquaTrack Pro — Pool villa payment management">
+    <title>{% block title %}AquaTrack Pro{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'cleaning_app/style.css' %}">
 </head>
 <body>
     <nav class="navbar">
         <a href="{% url 'dashboard' %}" class="nav-brand">AquaTrack Pro</a>
-        
         <div class="nav-links">
             {% if user.is_authenticated %}
-                <span>Welcome, <strong>{{ user.username }}</strong></span>
-                <a href="{% url 'dashboard' %}" class="btn btn-outline">Dashboard</a>
+                <span class="nav-user">{{ user.username }}</span>
+                <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm">Dashboard</a>
                 <form method="post" action="{% url 'logout' %}" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-outline">Logout</button>
+                    <button type="submit" class="btn btn-outline btn-sm">Logout</button>
                 </form>
             {% else %}
-                <a href="{% url 'login' %}" class="btn btn-outline">Login</a>
-                <a href="{% url 'register' %}" class="btn btn-primary">Sign Up</a>
+                <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Log in</a>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Sign up</a>
             {% endif %}
         </div>
     </nav>
@@ -37,15 +33,14 @@
         {% if messages %}
             <div class="messages">
                 {% for message in messages %}
-                    <div class="glass-card" style="margin-bottom: 1rem; padding: 1rem; border-left: 4px solid var(--secondary);">
+                    <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}">
                         {{ message }}
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
 
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 </body>
 </html>
