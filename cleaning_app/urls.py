@@ -10,6 +10,8 @@ urlpatterns = [
     path('villa/add/', views.add_villa, name='add_villa'),
     path('villa/<int:villa_id>/', views.villa_detail, name='villa_detail'),
     path('villa/<int:villa_id>/payments/', views.manage_payments, name='manage_payments'),
+    path('villa/<int:villa_id>/edit/', views.edit_villa, name='edit_villa'),
+    path('villa/<int:villa_id>/delete/', views.delete_villa, name='delete_villa'),
     path('payment/<int:payment_id>/update/', views.update_payment, name='update_payment'),
     path('villa/<int:villa_id>/toggle_payment/', views.toggle_dashboard_payment, name='toggle_dashboard_payment'),
 ]

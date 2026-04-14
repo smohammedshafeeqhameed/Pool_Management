@@ -46,8 +46,23 @@ class PaymentPeriodForm(forms.Form):
         max_length=100,
         widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Name of payer'})
     )
-    bill_given = forms.BooleanField(required=False, initial=False)
-    is_paid = forms.BooleanField(required=False, initial=True)
+    STATUS_CHOICES_PAID = [(True, 'Paid'), (False, 'Unpaid')]
+    STATUS_CHOICES_BILL = [(True, 'Bill Given'), (False, 'Not Given')]
+    
+    bill_given = forms.TypedChoiceField(
+        choices=STATUS_CHOICES_BILL,
+        coerce=lambda x: x == 'True',
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        label="Bill Status",
+        initial=False
+    )
+    is_paid = forms.TypedChoiceField(
+        choices=STATUS_CHOICES_PAID,
+        coerce=lambda x: x == 'True',
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        label="Payment Status",
+        initial=False
+    )
 
     def clean_start_month(self):
         d = self.cleaned_data.get('start_month')
@@ -70,3 +85,26 @@ class PaymentPeriodForm(forms.Form):
             raise forms.ValidationError("End Month cannot be before Start Month.")
             
         return cleaned_data
+
+class PaymentRecordForm(forms.ModelForm):
+    bill_given = forms.TypedChoiceField(
+        choices=[(True, 'Bill Given'), (False, 'Not Given')],
+        coerce=lambda x: x == 'True',
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        label="Bill Status"
+    )
+    is_paid = forms.TypedChoiceField(
+        choices=[(True, 'Paid'), (False, 'Unpaid')],
+        coerce=lambda x: x == 'True',
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        label="Payment Status"
+    )
+
+    class Meta:
+        model = PaymentRecord
+        fields = ['amount_paid', 'payment_date', 'received_from', 'bill_given', 'is_paid']
+        widgets = {
+            'amount_paid': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01'}),
+            'payment_date': forms.DateInput(attrs={'class': 'form-input', 'type': 'date'}),
+            'received_from': forms.TextInput(attrs={'class': 'form-input'}),
+        }

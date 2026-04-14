@@ -31,6 +31,13 @@
         <a href="{% url 'manage_payments' villa.id %}" class="btn btn-primary" id="manage-payments-btn">
             Manage Payments
         </a>
+        <a href="{% url 'edit_villa' villa.id %}" class="btn btn-outline">
+            Edit
+        </a>
+        <form method="post" action="{% url 'delete_villa' villa.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this villa? This action cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline" style="color: #ef4444; border-color: #ef4444;">Delete</button>
+        </form>
         <a href="{% url 'dashboard' %}" class="btn btn-ghost">Back</a>
     </div>
 </div>
@@ -46,12 +53,15 @@
         {% if payments %}
             <div style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch;">
                 {% for payment in payments %}
-                <div class="payment-card">
+                <a href="{% url 'update_payment' payment.id %}" class="payment-card" style="text-decoration: none; display: block;">
                     <div class="payment-card-month">{{ payment.month_year|date:"M Y" }}</div>
                     <div class="payment-card-amount">{{ payment.amount_paid }} <span style="font-size:0.75rem; font-weight:500; color:var(--text-sub);">AED</span></div>
                     <div class="payment-card-meta">
+                        {% if payment.bill_given_date %}
+                            <span>🧾 {{ payment.bill_given_date|date:"d M Y" }}</span>
+                        {% endif %}
                         {% if payment.payment_date %}
-                            <span>📅 {{ payment.payment_date|date:"d M Y" }}</span>
+                            <span>💰 {{ payment.payment_date|date:"d M Y" }}</span>
                         {% endif %}
                         {% if payment.received_from %}
                             <span>👤 {{ payment.received_from }}</span>
@@ -69,7 +79,7 @@
                             <span class="badge badge-neutral">No Bill</span>
                         {% endif %}
                     </div>
-                </div>
+                </a>
                 {% endfor %}
             </div>
         {% else %}

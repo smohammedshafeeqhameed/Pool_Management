@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib import messages
 from .models import Villa, PaymentRecord
-from .forms import VillaForm, PaymentPeriodForm
+from .forms import VillaForm, PaymentPeriodForm, PaymentRecordForm
 import datetime
 
 def register(request):
@@ -40,7 +42,7 @@ def dashboard(request):
         (5, 'May'), (6, 'June'), (7, 'July'), (8, 'August'),
         (9, 'September'), (10, 'October'), (11, 'November'), (12, 'December')
     ]
-    years_choices = list(range(today.year - 3, today.year + 2))
+    years_choices = list(range(today.year - 10, today.year + 11))
     
     payment_status = request.GET.getlist('payment_status')
     bill_given = request.GET.getlist('bill_given')
@@ -114,6 +116,26 @@ def add_villa(request):
     return render(request, 'cleaning_app/add_villa.html', {'form': form})
 
 @login_required
+def edit_villa(request, villa_id):
+    villa = get_object_or_404(Villa, pk=villa_id)
+    if request.method == 'POST':
+        form = VillaForm(request.POST, instance=villa)
+        if form.is_valid():
+            form.save()
+            return redirect('villa_detail', villa_id=villa.id)
+    else:
+        form = VillaForm(instance=villa)
+    return render(request, 'cleaning_app/edit_villa.html', {'form': form, 'villa': villa})
+
+@login_required
+def delete_villa(request, villa_id):
+    villa = get_object_or_404(Villa, pk=villa_id)
+    if request.method == 'POST':
+        villa.delete()
+        return redirect('dashboard')
+    return redirect('villa_detail', villa_id=villa.id)
+
+@login_required
 def villa_detail(request, villa_id):
     villa = get_object_or_404(Villa, pk=villa_id)
     payments = villa.payment_records.all().order_by('-month_year')[:6]  # Show last 6 months
@@ -148,6 +170,24 @@ def manage_payments(request, villa_id):
             count = len(months_to_update)
             amount_per_month = total_amount / count if count > 0 else 0
             
+            # Check for existing records
+            existing_records = PaymentRecord.objects.filter(
+                villa=villa, 
+                month_year__in=months_to_update
+            )
+            
+            confirm_overwrite = request.POST.get('confirm_overwrite') == 'true'
+            
+            if existing_records.exists() and not confirm_overwrite:
+                conflicting_months = [r.month_year.strftime('%B %Y') for r in existing_records]
+                messages.warning(request, f"Payments for {', '.join(conflicting_months)} are already logged. Do you want to overwrite them?")
+                return render(request, 'cleaning_app/manage_payments.html', {
+                    'villa': villa,
+                    'payments': payments,
+                    'form': form,
+                    'conflicting_months': conflicting_months
+                })
+
             for month_date in months_to_update:
                 PaymentRecord.objects.update_or_create(
                     villa=villa,
@@ -174,19 +214,13 @@ def manage_payments(request, villa_id):
 def update_payment(request, payment_id):
     payment = get_object_or_404(PaymentRecord, pk=payment_id)
     if request.method == 'POST':
-        # Simple toggle or update logic
-        action = request.POST.get('action')
-        if action == 'toggle_bill':
-            payment.bill_given = not payment.bill_given
-        elif action == 'toggle_paid':
-            payment.is_paid = not payment.is_paid
-        elif action == 'update_amount':
-            try:
-                payment.amount_paid = request.POST.get('amount', 0)
-            except:
-                pass
-        payment.save()
-    return redirect('manage_payments', villa_id=payment.villa.id)
+        form = PaymentRecordForm(request.POST, instance=payment)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_payments', villa_id=payment.villa.id)
+    else:
+        form = PaymentRecordForm(instance=payment)
+    return render(request, 'cleaning_app/payment_detail.html', {'form': form, 'payment': payment})
 
 @login_required
 def toggle_dashboard_payment(request, villa_id):

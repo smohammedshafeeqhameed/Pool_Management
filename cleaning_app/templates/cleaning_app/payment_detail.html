@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Payment — AquaTrack Pro{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'manage_payments' payment.villa.id %}" class="back-link animate-fade-in">Back to Payment History</a>
+
+<div class="page-header animate-fade-in">
+    <div class="page-header-text">
+        <h1>Edit Payment</h1>
+        <p>{{ payment.month_year|date:"F Y" }} - {{ payment.villa.name }}</p>
+    </div>
+</div>
+
+<div class="glass-card animate-fade-in delay-1" style="max-width: 560px;">
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-error-box">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.errors %}
+                    <ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                {% endif %}
+                
+                {{ field }}
+                
+                {% if field.help_text %}
+                    <span class="helptext">{{ field.help_text }}</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">Save Payment</button>
+            <a href="{% url 'manage_payments' payment.villa.id %}" class="btn btn-ghost btn-lg" style="flex:1;">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

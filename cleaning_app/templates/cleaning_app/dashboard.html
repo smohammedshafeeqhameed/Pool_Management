@@ -2,6 +2,8 @@
 
 {% block title %}Dashboard — AquaTrack Pro{% endblock %}
 
+{% block dashboard_nav_btn %}{% endblock %}
+
 {% block content %}
 
 <!-- Page Header -->
@@ -19,9 +21,9 @@
 <div class="filter-bar animate-fade-in delay-1">
 
     <!-- Year -->
-    <div class="filter-group">
+    <div class="filter-group" style="flex-wrap: nowrap;">
         <span class="filter-label">Year</span>
-        <select class="chip" style="appearance: auto; padding-right: 1.5rem; outline: none; border-radius: 9999px; min-height:34px;"
+        <select style="appearance: auto; padding: 0.35rem 1.5rem 0.35rem 0.8rem; outline: none; border-radius: var(--radius-sm); min-height:34px; background: white; border: 1.5px solid var(--border); color: var(--text); font-family: inherit; font-size: 0.85rem;"
                 onchange="updateFilter('selected_year', this.value)">
             {% for y in years_choices %}
                 <option value="{{ y }}" {% if selected_y == y %}selected{% endif %}>{{ y }}</option>

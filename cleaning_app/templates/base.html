@@ -17,7 +17,9 @@
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <span class="nav-user">{{ user.username }}</span>
+                {% block dashboard_nav_btn %}
                 <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm">Dashboard</a>
+                {% endblock %}
                 <form method="post" action="{% url 'logout' %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline btn-sm">Logout</button>

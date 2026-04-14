@@ -29,7 +29,7 @@
                         <tr>
                             <th>Month</th>
                             <th>Amount (AED)</th>
-                            <th>Payment Info</th>
+                            <th>Dates</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -41,50 +41,36 @@
                                 <strong style="font-size: 0.85rem;">{{ payment.month_year|date:"F Y" }}</strong>
                             </td>
 
-                            <!-- Amount inline edit -->
+                            <!-- Amount -->
                             <td>
-                                <form action="{% url 'update_payment' payment.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="update_amount">
-                                    <div class="amount-form">
-                                        <input type="number" name="amount"
-                                               value="{{ payment.amount_paid }}"
-                                               step="0.01"
-                                               class="form-input amount-input">
-                                        <button type="submit" class="btn btn-primary btn-sm" title="Save amount">✓</button>
-                                    </div>
-                                </form>
+                                <strong>{{ payment.amount_paid }}</strong>
                             </td>
 
-                            <!-- Payment info -->
+                            <!-- Dates -->
                             <td>
-                                <div style="font-size: 0.8rem; line-height: 1.7;">
-                                    <div>📅 <span style="color: var(--text-sub);">{{ payment.payment_date|default:"Pending" }}</span></div>
-                                    <div>👤 <span style="color: var(--text-sub);">{{ payment.received_from|default:"Unknown" }}</span></div>
+                                <div style="font-size: 0.75rem; color: var(--text-sub); line-height: 1.4;">
+                                    {% if payment.bill_given and payment.bill_given_date %}
+                                        <div style="margin-bottom: 2px;">🧾 Bill: {{ payment.bill_given_date|date:"d M Y" }}</div>
+                                    {% endif %}
+                                    {% if payment.is_paid and payment.payment_date %}
+                                        <div style="margin-bottom: 2px;">💰 Paid: {{ payment.payment_date|date:"d M Y" }}</div>
+                                    {% endif %}
+                                    {% if not payment.bill_given and not payment.is_paid %}
+                                        <span style="color: var(--text-muted); font-style: italic;">No actions yet</span>
+                                    {% endif %}
                                 </div>
                             </td>
 
-                            <!-- Status toggles -->
+                            <!-- Status and actions -->
                             <td>
-                                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-                                    <form action="{% url 'update_payment' payment.id %}" method="POST" style="margin:0;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="toggle_bill">
-                                        <button type="submit"
-                                                class="toggle-badge {% if payment.bill_given %}bill-given{% else %}no-bill{% endif %}"
-                                                title="Toggle bill status">
-                                            {% if payment.bill_given %}Bill Given{% else %}No Bill{% endif %}
-                                        </button>
-                                    </form>
-                                    <form action="{% url 'update_payment' payment.id %}" method="POST" style="margin:0;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="toggle_paid">
-                                        <button type="submit"
-                                                class="toggle-badge {% if payment.is_paid %}paid{% else %}unpaid{% endif %}"
-                                                title="Toggle paid status">
-                                            {% if payment.is_paid %}Paid{% else %}Unpaid{% endif %}
-                                        </button>
-                                    </form>
+                                <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap; align-items: center;">
+                                    <span class="badge {% if payment.bill_given %}badge-success{% else %}badge-neutral{% endif %}">
+                                        {% if payment.bill_given %}Bill Given{% else %}No Bill{% endif %}
+                                    </span>
+                                    <span class="badge {% if payment.is_paid %}badge-success{% else %}badge-danger{% endif %}">
+                                        {% if payment.is_paid %}Paid{% else %}Unpaid{% endif %}
+                                    </span>
+                                    <a href="{% url 'update_payment' payment.id %}" class="btn btn-outline btn-sm" style="margin-left: auto; padding: 0.2rem 0.6rem; font-size: 0.75rem;">Edit</a>
                                 </div>
                             </td>
                         </tr>
@@ -150,17 +136,29 @@
                 {{ form.received_from }}
             </div>
 
-            <!-- Checkboxes -->
-            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.1rem;">
-                <label class="checkbox-row" style="flex: 1; min-width: 120px;">
+            <div class="period-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.1rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="{{ form.bill_given.id_for_label }}">Bill Status</label>
                     {{ form.bill_given }}
-                    <span>Bill Given</span>
-                </label>
-                <label class="checkbox-row" style="flex: 1; min-width: 120px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="{{ form.is_paid.id_for_label }}">Payment Status</label>
                     {{ form.is_paid }}
-                    <span>Mark as Paid</span>
+                </div>
+            </div>
+
+            {% if conflicting_months %}
+            <div class="alert alert-warning" style="margin-bottom: 1.25rem; border: 2px solid var(--warning);">
+                <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; text-transform: none; color: var(--text); font-size: 0.9rem;">
+                    <input type="checkbox" name="confirm_overwrite" value="true" style="width: 20px; height: 20px; margin-top: 2px;">
+                    <span>
+                        <strong>Confirm Overwrite:</strong> 
+                        Payments for the following months will be updated: 
+                        {{ conflicting_months|join:", " }}.
+                    </span>
                 </label>
             </div>
+            {% endif %}
 
             <button type="submit" class="btn btn-primary btn-full btn-lg">Save Payment</button>
         </form>
