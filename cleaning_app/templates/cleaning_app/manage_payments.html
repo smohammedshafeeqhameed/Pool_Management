@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<div class="grid animate-fade-in delay-1" style="gap: 1.25rem;">
+<div class="payment-layout animate-fade-in delay-1" style="gap: 1.25rem;">
 
     <!-- ── Left: Payment History ── -->
     <div class="glass-card" style="padding: 0; overflow: hidden;">
@@ -23,66 +23,69 @@
         </div>
 
         {% if payments %}
-            <div class="table-wrap" style="border: none; border-radius: 0;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Month</th>
-                            <th>Amount (AED)</th>
-                            <th>Dates</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for payment in payments %}
-                        <tr>
-                            <!-- Month -->
-                            <td>
-                                <strong style="font-size: 0.85rem;">{{ payment.month_year|date:"F Y" }}</strong>
-                            </td>
+        <div class="table-wrap" style="border: none; border-radius: 0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">Month</th>
+                        <th style="text-align: center;">Amount (AED)</th>
+                        <th style="text-align: center;">Dates</th>
+                        <th style="text-align: center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <!-- Month -->
+                        <td>
+                            <strong style="font-size: 0.85rem;">{{ payment.month_year|date:"F Y" }}</strong>
+                        </td>
 
-                            <!-- Amount -->
-                            <td>
-                                <strong>{{ payment.amount_paid }}</strong>
-                            </td>
+                        <!-- Amount -->
+                        <td>
+                            <strong>{{ payment.amount_paid }}</strong>
+                        </td>
 
-                            <!-- Dates -->
-                            <td>
-                                <div style="font-size: 0.75rem; color: var(--text-sub); line-height: 1.4;">
-                                    {% if payment.bill_given and payment.bill_given_date %}
-                                        <div style="margin-bottom: 2px;">🧾 Bill: {{ payment.bill_given_date|date:"d M Y" }}</div>
-                                    {% endif %}
-                                    {% if payment.is_paid and payment.payment_date %}
-                                        <div style="margin-bottom: 2px;">💰 Paid: {{ payment.payment_date|date:"d M Y" }}</div>
-                                    {% endif %}
-                                    {% if not payment.bill_given and not payment.is_paid %}
-                                        <span style="color: var(--text-muted); font-style: italic;">No actions yet</span>
-                                    {% endif %}
-                                </div>
-                            </td>
+                        <!-- Dates -->
+                        <td style="white-space: nowrap;">
+                            <div style="font-size: 0.75rem; color: var(--text-sub); line-height: 1.4;">
+                                {% if payment.bill_given and payment.bill_given_date %}
+                                <div style="margin-bottom: 2px;">Bill: {{ payment.bill_given_date|date:"d M Y" }}</div>
+                                {% endif %}
+                                {% if payment.is_paid and payment.payment_date %}
+                                <div style="margin-bottom: 2px;">Paid: {{ payment.payment_date|date:"d M Y" }}</div>
+                                {% endif %}
+                                {% if not payment.bill_given and not payment.is_paid %}
+                                <span style="color: var(--text-muted); font-style: italic;">No actions yet</span>
+                                {% endif %}
+                            </div>
+                        </td>
 
-                            <!-- Status and actions -->
-                            <td>
-                                <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap; align-items: center;">
-                                    <span class="badge {% if payment.bill_given %}badge-success{% else %}badge-neutral{% endif %}">
-                                        {% if payment.bill_given %}Bill Given{% else %}No Bill{% endif %}
-                                    </span>
-                                    <span class="badge {% if payment.is_paid %}badge-success{% else %}badge-danger{% endif %}">
-                                        {% if payment.is_paid %}Paid{% else %}Unpaid{% endif %}
-                                    </span>
-                                    <a href="{% url 'update_payment' payment.id %}" class="btn btn-outline btn-sm" style="margin-left: auto; padding: 0.2rem 0.6rem; font-size: 0.75rem;">Edit</a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        <!-- Status and actions -->
+                        <td>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap; align-items: center;">
+                                <span
+                                    class="badge {% if payment.bill_given %}badge-success{% else %}badge-neutral{% endif %}">
+                                    {% if payment.bill_given %}Bill Given{% else %}No Bill{% endif %}
+                                </span>
+                                <span
+                                    class="badge {% if payment.is_paid %}badge-success{% else %}badge-danger{% endif %}">
+                                    {% if payment.is_paid %}Paid{% else %}Unpaid{% endif %}
+                                </span>
+                                <a href="{% url 'update_payment' payment.id %}" class="btn btn-outline btn-sm"
+                                    style="margin-left: auto; padding: 0.2rem 0.6rem; font-size: 0.75rem;">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-            <div class="empty-state" style="padding: 2rem 1rem;">
-                <span class="empty-icon">💳</span>
-                <p>No payment records found.</p>
-            </div>
+        <div class="empty-state" style="padding: 2rem 1rem;">
+            <span class="empty-icon">💳</span>
+            <p>No payment records found.</p>
+        </div>
         {% endif %}
     </div>
 
@@ -98,16 +101,16 @@
                 <strong>Please fix the following errors:</strong>
                 <ul>
                     {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <li>{% if field != '__all__' %}{{ field|title }}: {% endif %}{{ error }}</li>
-                        {% endfor %}
+                    {% for error in errors %}
+                    <li>{% if field != '__all__' %}{{ field|title }}: {% endif %}{{ error }}</li>
+                    {% endfor %}
                     {% endfor %}
                 </ul>
             </div>
             {% endif %}
 
             <!-- Start / End month row -->
-            <div class="period-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label for="{{ form.start_month.id_for_label }}">Start Month</label>
                     {{ form.start_month }}
@@ -136,7 +139,8 @@
                 {{ form.received_from }}
             </div>
 
-            <div class="period-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.1rem;">
+            <div class="period-grid"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.1rem;">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label for="{{ form.bill_given.id_for_label }}">Bill Status</label>
                     {{ form.bill_given }}
@@ -149,11 +153,13 @@
 
             {% if conflicting_months %}
             <div class="alert alert-warning" style="margin-bottom: 1.25rem; border: 2px solid var(--warning);">
-                <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; text-transform: none; color: var(--text); font-size: 0.9rem;">
-                    <input type="checkbox" name="confirm_overwrite" value="true" style="width: 20px; height: 20px; margin-top: 2px;">
+                <label
+                    style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; text-transform: none; color: var(--text); font-size: 0.9rem;">
+                    <input type="checkbox" name="confirm_overwrite" value="true"
+                        style="width: 20px; height: 20px; margin-top: 2px;">
                     <span>
-                        <strong>Confirm Overwrite:</strong> 
-                        Payments for the following months will be updated: 
+                        <strong>Confirm Overwrite:</strong>
+                        Payments for the following months will be updated:
                         {{ conflicting_months|join:", " }}.
                     </span>
                 </label>
@@ -164,13 +170,24 @@
         </form>
     </div>
 
-</div><!-- /.grid -->
-
 <!-- Responsive 2-col only on ≥768px -->
 <style>
-@media (min-width: 768px) {
-    .grid { grid-template-columns: 1fr 1fr; }
-}
+    .payment-layout {
+        display: flex;
+        flex-direction: column;
+    }
+    @media (min-width: 768px) {
+        .payment-layout {
+            display: grid;
+            grid-template-columns: 1fr minmax(280px, 320px);
+            align-items: start;
+        }
+    }
+    @media (min-width: 1024px) {
+        .payment-layout {
+            grid-template-columns: 1fr 320px;
+        }
+    }
 </style>
 
 {% endblock %}

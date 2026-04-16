@@ -14,6 +14,11 @@ class VillaForm(forms.ModelForm):
             'longitude': forms.NumberInput(attrs={'class': 'form-input', 'step': 'any', 'placeholder': 'Longitude (e.g., 55.2708)'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].required = True
+        self.fields['phone_number'].required = True
+
 
 class PaymentPeriodForm(forms.Form):
     """Form for logging a payment across a period of months (inclusive)."""

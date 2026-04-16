@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AquaTrack Pro — Pool villa payment management">
-    <title>{% block title %}AquaTrack Pro{% endblock %}</title>
+    <meta name="description" content="Company Name — Pool villa payment management">
+    <title>{% block title %}Company Name{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="{% url 'dashboard' %}" class="nav-brand">AquaTrack Pro</a>
+        <a href="{% url 'dashboard' %}" class="nav-brand">Company Name</a>
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <span class="nav-user">{{ user.username }}</span>
