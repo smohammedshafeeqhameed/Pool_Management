@@ -62,10 +62,16 @@ def dashboard(request):
         
         for m in months_to_show:
             record = payment_dict.get(m, None)
-            
+
+            # If filters are active but there is no payment record for this
+            # month, skip — a missing record should NOT count as "unpaid" or
+            # "no bill" when the user is drilling down with filters.
+            if (payment_status or bill_given) and record is None:
+                continue
+
             is_paid = record.is_paid if record else False
             is_bg = record.bill_given if record else False
-            
+
             match_ps = True
             if payment_status:
                 if 'paid' in payment_status and 'not_paid' in payment_status:
@@ -83,7 +89,7 @@ def dashboard(request):
                     match_bg = is_bg
                 elif 'not_given' in bill_given:
                     match_bg = not is_bg
-                    
+
             if match_ps and match_bg:
                 villa_matches = True
                 break
