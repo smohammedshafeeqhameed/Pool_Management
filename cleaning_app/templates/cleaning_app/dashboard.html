@@ -12,9 +12,15 @@
         <h1>Dashboard</h1>
         <p>Manage your villas and track payments.</p>
     </div>
-    <a href="{% url 'add_villa' %}" class="btn btn-primary" id="add-villa-btn">
-        + Add New Villa
-    </a>
+    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <div class="search-box" style="display: flex; align-items: center;">
+            <input type="text" id="searchInput" value="{{ search_query|default:'' }}" placeholder="Search villa name..." style="padding: 0.5rem 0.8rem; border: 1.5px solid var(--border); border-right: none; border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); outline: none; font-size: 0.9rem; min-width: 220px; font-family: inherit;" onkeydown="if(event.key === 'Enter') updateFilter('search', this.value)">
+            <button type="button" onclick="updateFilter('search', document.getElementById('searchInput').value)" style="border: 1.5px solid var(--border); border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); border-top-left-radius: 0; border-bottom-left-radius: 0; height: 36px; display: inline-flex; align-items: center; padding: 0 0.8em; background: var(--bg-hover); color: var(--text-muted); cursor: pointer; font-family: inherit; font-size: 0.85rem;">Search</button>
+        </div>
+        <a href="{% url 'add_villa' %}" class="btn btn-primary" id="add-villa-btn">
+            + Add New Villa
+        </a>
+    </div>
 </div>
 
 <!-- Filter Bar -->
@@ -98,6 +104,13 @@
                 onclick="toggleFilter('bill_given', 'not_given')">
             Not Given {% if 'not_given' in bill_given %}<span class="chip-remove">×</span>{% endif %}
         </button>
+    </div>
+
+    <!-- Clear Filters -->
+    <div class="filter-group" style="margin-left: auto; align-self: flex-start; margin-top: 1.4rem;">
+        <a href="{% url 'dashboard' %}" class="btn btn-light btn-sm" style="background: transparent; border: 1.5px solid var(--border); padding: 0.4rem 0.8rem; font-size: 0.8rem; color: var(--text-muted); text-decoration: none; border-radius: var(--radius-sm); transition: all 0.2s ease;">
+            ✕ Clear Filters
+        </a>
     </div>
 
 </div><!-- /.filter-bar -->

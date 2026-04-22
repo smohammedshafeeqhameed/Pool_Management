@@ -46,8 +46,12 @@ def dashboard(request):
     
     payment_status = request.GET.getlist('payment_status')
     bill_given = request.GET.getlist('bill_given')
+    search_query = request.GET.get('search', '').strip()
     
     villas_query = Villa.objects.all().order_by('-created_at')
+    if search_query:
+        villas_query = villas_query.filter(name__icontains=search_query)
+        
     all_villas = list(villas_query.prefetch_related('payment_records'))
     
     villas = []
@@ -63,14 +67,17 @@ def dashboard(request):
         for m in months_to_show:
             record = payment_dict.get(m, None)
 
-            # If filters are active but there is no payment record for this
-            # month, skip — a missing record should NOT count as "unpaid" or
-            # "no bill" when the user is drilling down with filters.
-            if (payment_status or bill_given) and record is None:
+            if not payment_status and not bill_given:
+                villa_matches = True
+                break
+
+            # A transaction must actually exist in the database
+            # when filters are active.
+            if record is None:
                 continue
 
-            is_paid = record.is_paid if record else False
-            is_bg = record.bill_given if record else False
+            is_paid = record.is_paid
+            is_bg = record.bill_given
 
             match_ps = True
             if payment_status:
@@ -104,6 +111,7 @@ def dashboard(request):
         'selected_months': selected_months,
         'payment_status': payment_status,
         'bill_given': bill_given,
+        'search_query': search_query,
         'months_choices': months_choices,
         'years_choices': years_choices
     })

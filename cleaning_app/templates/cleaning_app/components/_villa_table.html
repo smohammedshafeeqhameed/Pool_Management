@@ -42,25 +42,29 @@
                         <td style="text-align: center; vertical-align: middle;">
                             <div style="display: flex; flex-direction: column; gap: 0.35rem; align-items: center;">
 
-                                <!-- Bill Toggle -->
-                                <form action="{% url 'toggle_dashboard_payment' villa.id %}" method="POST" style="margin:0;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="toggle_bill">
-                                    <input type="hidden" name="month_year" value="{{ p_data.month|date:'Y-m-d' }}">
-                                    <button type="submit" class="toggle-badge {% if p_data.record and p_data.record.bill_given %}bill-given{% else %}no-bill{% endif %}" title="Toggle Bill">
-                                        {% if p_data.record and p_data.record.bill_given %}Bill Given{% else %}No Bill{% endif %}
-                                    </button>
-                                </form>
+                                {% if p_data.record %}
+                                    <!-- Bill Toggle -->
+                                    <form action="{% url 'toggle_dashboard_payment' villa.id %}" method="POST" style="margin:0;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="toggle_bill">
+                                        <input type="hidden" name="month_year" value="{{ p_data.month|date:'Y-m-d' }}">
+                                        <button type="submit" class="toggle-badge {% if p_data.record.bill_given %}bill-given{% else %}no-bill{% endif %}" title="Toggle Bill">
+                                            {% if p_data.record.bill_given %}Bill Given{% else %}No Bill{% endif %}
+                                        </button>
+                                    </form>
 
-                                <!-- Paid Toggle -->
-                                <form action="{% url 'toggle_dashboard_payment' villa.id %}" method="POST" style="margin:0;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="toggle_paid">
-                                    <input type="hidden" name="month_year" value="{{ p_data.month|date:'Y-m-d' }}">
-                                    <button type="submit" class="toggle-badge {% if p_data.record and p_data.record.is_paid %}paid{% else %}unpaid{% endif %}" title="Toggle Paid">
-                                        {% if p_data.record and p_data.record.is_paid %}Paid{% else %}Unpaid{% endif %}
-                                    </button>
-                                </form>
+                                    <!-- Paid Toggle -->
+                                    <form action="{% url 'toggle_dashboard_payment' villa.id %}" method="POST" style="margin:0;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="toggle_paid">
+                                        <input type="hidden" name="month_year" value="{{ p_data.month|date:'Y-m-d' }}">
+                                        <button type="submit" class="toggle-badge {% if p_data.record.is_paid %}paid{% else %}unpaid{% endif %}" title="Toggle Paid">
+                                            {% if p_data.record.is_paid %}Paid{% else %}Unpaid{% endif %}
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <a href="{% url 'manage_payments' villa.id %}" class="toggle-badge" style="background: var(--bg-hover); color: var(--text-muted); text-decoration: none; border: 1px dashed var(--border);">+ Log</a>
+                                {% endif %}
 
                             </div>
                         </td>
