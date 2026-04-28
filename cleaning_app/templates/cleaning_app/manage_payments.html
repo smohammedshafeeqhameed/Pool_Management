@@ -24,12 +24,13 @@
 
         {% if payments %}
         <div class="table-wrap" style="border: none; border-radius: 0;">
-            <table>
+            <table class="payment-table">
                 <thead>
                     <tr>
-                        <th style="text-align: center;">Month</th>
+                        <th style="text-align: left; white-space: nowrap;">Month</th>
                         <th style="text-align: center;">Amount (AED)</th>
-                        <th style="text-align: center;">Dates</th>
+                        <th style="text-align: center;">Mode</th>
+                        <th style="text-align: left;">Dates</th>
                         <th style="text-align: center;">Status</th>
                     </tr>
                 </thead>
@@ -37,43 +38,52 @@
                     {% for payment in payments %}
                     <tr>
                         <!-- Month -->
-                        <td>
+                        <td style="text-align: left; vertical-align: middle; white-space: nowrap;">
                             <strong style="font-size: 0.85rem;">{{ payment.month_year|date:"F Y" }}</strong>
                         </td>
 
                         <!-- Amount -->
-                        <td>
+                        <td style="text-align: center; vertical-align: middle;">
                             <strong>{{ payment.amount_paid }}</strong>
                         </td>
 
+                        <!-- Mode -->
+                        <td style="text-align: center; vertical-align: middle;">
+                            {% if payment.mode_of_payment %}
+                            <span style="font-size: 0.85rem; color: var(--text-sub);">{{ payment.mode_of_payment }}</span>
+                            {% else %}
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">—</span>
+                            {% endif %}
+                        </td>
+
                         <!-- Dates -->
-                        <td style="white-space: nowrap;">
+                        <td style="text-align: left; vertical-align: middle;">
                             <div style="font-size: 0.75rem; color: var(--text-sub); line-height: 1.4;">
                                 {% if payment.bill_given and payment.bill_given_date %}
-                                <div style="margin-bottom: 2px;">Bill: {{ payment.bill_given_date|date:"d M Y" }}</div>
+                                <div style="margin-bottom: 2px; white-space: nowrap;">Bill: {{ payment.bill_given_date|date:"d M Y" }}</div>
                                 {% endif %}
                                 {% if payment.is_paid and payment.payment_date %}
-                                <div style="margin-bottom: 2px;">Paid: {{ payment.payment_date|date:"d M Y" }}</div>
+                                <div style="margin-bottom: 2px; white-space: nowrap;">Paid: {{ payment.payment_date|date:"d M Y" }}</div>
                                 {% endif %}
                                 {% if not payment.bill_given and not payment.is_paid %}
-                                <span style="color: var(--text-muted); font-style: italic;">No actions yet</span>
+                                <span style="color: var(--text-muted); font-style: italic; white-space: nowrap;">No actions yet</span>
                                 {% endif %}
                             </div>
                         </td>
 
                         <!-- Status and actions -->
-                        <td>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap; align-items: center;">
+                        <td style="text-align: center; vertical-align: middle;">
+                            <div style="display: flex; gap: 0.4rem; flex-wrap: nowrap; align-items: center; justify-content: center;">
                                 <span
-                                    class="badge {% if payment.bill_given %}badge-success{% else %}badge-neutral{% endif %}">
+                                    class="badge {% if payment.bill_given %}badge-success{% else %}badge-neutral{% endif %}" style="width: 75px; justify-content: center; text-align: center; padding: 0.2rem 0;">
                                     {% if payment.bill_given %}Bill Given{% else %}No Bill{% endif %}
                                 </span>
                                 <span
-                                    class="badge {% if payment.is_paid %}badge-success{% else %}badge-danger{% endif %}">
+                                    class="badge {% if payment.is_paid %}badge-success{% else %}badge-danger{% endif %}" style="width: 60px; justify-content: center; text-align: center; padding: 0.2rem 0;">
                                     {% if payment.is_paid %}Paid{% else %}Unpaid{% endif %}
                                 </span>
                                 <a href="{% url 'update_payment' payment.id %}" class="btn btn-outline btn-sm"
-                                    style="margin-left: auto; padding: 0.2rem 0.6rem; font-size: 0.75rem;">Edit</a>
+                                    style="width: 45px; padding: 0.2rem 0; font-size: 0.75rem; text-align: center; justify-content: center;">Edit</a>
                             </div>
                         </td>
                     </tr>
@@ -139,15 +149,25 @@
                 {{ form.received_from }}
             </div>
 
+            <!-- Mode of payment -->
+            <div class="form-group">
+                <label for="{{ form.mode_of_payment.id_for_label }}">Mode of Payment</label>
+                {{ form.mode_of_payment }}
+            </div>
+
             <div class="period-grid"
-                style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.1rem;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="{{ form.bill_given.id_for_label }}">Bill Status</label>
-                    {{ form.bill_given }}
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.1rem;">
+                <div class="form-group" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                    <label for="{{ form.bill_given.id_for_label }}" style="white-space: nowrap; font-size: 0.7rem; letter-spacing: 0;">Bill Status</label>
+                    <div class="status-select-wrap">
+                        {{ form.bill_given }}
+                    </div>
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="{{ form.is_paid.id_for_label }}">Payment Status</label>
-                    {{ form.is_paid }}
+                <div class="form-group" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                    <label for="{{ form.is_paid.id_for_label }}" style="white-space: nowrap; font-size: 0.7rem; letter-spacing: 0;">Payment Status</label>
+                    <div class="status-select-wrap">
+                        {{ form.is_paid }}
+                    </div>
                 </div>
             </div>
 
@@ -172,20 +192,29 @@
 
 <!-- Responsive 2-col only on ≥768px -->
 <style>
+    .payment-table th, .payment-table td {
+        padding-left: 0.6rem !important;
+        padding-right: 0.6rem !important;
+    }
     .payment-layout {
         display: flex;
         flex-direction: column;
     }
+    .status-select-wrap select {
+        padding-left: 0.5rem !important;
+        padding-right: 1.5rem !important;
+        font-size: 0.8rem !important;
+    }
     @media (min-width: 768px) {
         .payment-layout {
             display: grid;
-            grid-template-columns: 1fr minmax(280px, 320px);
+            grid-template-columns: 1fr 280px;
             align-items: start;
         }
     }
     @media (min-width: 1024px) {
         .payment-layout {
-            grid-template-columns: 1fr 320px;
+            grid-template-columns: 1fr 280px;
         }
     }
 </style>

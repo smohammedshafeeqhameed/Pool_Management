@@ -6,13 +6,18 @@ from .models import Villa, PaymentRecord
 class VillaForm(forms.ModelForm):
     class Meta:
         model = Villa
-        fields = ['name', 'phone_number', 'latitude', 'longitude']
+        fields = ['name', 'phone_number', 'location']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Villa Name'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g., 555-0199'}),
-            'latitude': forms.NumberInput(attrs={'class': 'form-input', 'step': 'any', 'placeholder': 'Latitude (e.g., 25.2048)'}),
-            'longitude': forms.NumberInput(attrs={'class': 'form-input', 'step': 'any', 'placeholder': 'Longitude (e.g., 55.2708)'}),
+            'location': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Location details'}),
         }
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if phone_number and any(char.isalpha() for char in phone_number):
+            raise forms.ValidationError("Phone number cannot contain alphabets.")
+        return phone_number
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -50,6 +55,13 @@ class PaymentPeriodForm(forms.Form):
         required=False,
         max_length=100,
         widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Name of payer'})
+    )
+    mode_of_payment = forms.ChoiceField(
+        choices=[('Cash', 'Cash'), ('Online', 'Online')],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        label="Mode of Payment",
+        initial='Cash'
     )
     STATUS_CHOICES_PAID = [(True, 'Paid'), (False, 'Unpaid')]
     STATUS_CHOICES_BILL = [(True, 'Bill Given'), (False, 'Not Given')]
@@ -107,9 +119,10 @@ class PaymentRecordForm(forms.ModelForm):
 
     class Meta:
         model = PaymentRecord
-        fields = ['amount_paid', 'payment_date', 'received_from', 'bill_given', 'is_paid']
+        fields = ['amount_paid', 'payment_date', 'received_from', 'mode_of_payment', 'bill_given', 'is_paid']
         widgets = {
             'amount_paid': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01'}),
             'payment_date': forms.DateInput(attrs={'class': 'form-input', 'type': 'date'}),
             'received_from': forms.TextInput(attrs={'class': 'form-input'}),
+            'mode_of_payment': forms.Select(attrs={'class': 'form-input'}),
         }

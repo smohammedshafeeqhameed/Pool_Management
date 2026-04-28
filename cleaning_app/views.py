@@ -212,6 +212,7 @@ def manage_payments(request, villa_id):
                         'is_paid': form.cleaned_data.get('is_paid'),
                         'payment_date': form.cleaned_data.get('payment_date'),
                         'received_from': form.cleaned_data.get('received_from'),
+                        'mode_of_payment': form.cleaned_data.get('mode_of_payment'),
                     }
                 )
             return redirect('manage_payments', villa_id=villa.id)

@@ -29,10 +29,10 @@
                                 {{ villa.phone_number }}
                             </span>
                         {% endif %}
-                                {% if villa.latitude and villa.longitude %}
+                                {% if villa.location %}
                             <span style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                {{ villa.latitude|floatformat:4 }}, {{ villa.longitude|floatformat:4 }}
+                                {{ villa.location }}
                             </span>
                         {% endif %}
                             </div>

@@ -22,8 +22,8 @@
                 {{ villa.phone_number }}
             </span>
             {% endif %}
-            {% if villa.latitude and villa.longitude %}
-            <a href="https://www.google.com/maps/search/?api=1&query={{ villa.latitude }},{{ villa.longitude }}"
+            {% if villa.location %}
+            <a href="https://www.google.com/maps/search/?api=1&query={{ villa.location }}"
                 target="_blank" rel="noopener"
                 style="display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-sub); font-size: 0.88rem;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -31,7 +31,7 @@
                     <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z" />
                     <circle cx="12" cy="10" r="3" />
                 </svg>
-                {{ villa.latitude }}, {{ villa.longitude }}
+                {{ villa.location }}
             </a>
             {% endif %}
         </p>

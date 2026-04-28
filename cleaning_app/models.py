@@ -3,9 +3,8 @@ from django.contrib.auth.models import User
 
 class Villa(models.Model):
     name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=15, blank=True, help_text="Contact phone number")
-    latitude = models.FloatField(blank=True, null=True, help_text="GPS Latitude")
-    longitude = models.FloatField(blank=True, null=True, help_text="GPS Longitude")
+    phone_number = models.CharField(max_length=15, blank=True, unique=True, help_text="Contact phone number")
+    location = models.CharField(max_length=255, blank=True, null=True, help_text="Location details")
 
     
     service_start = models.DateField(null=True, blank=True, help_text="First billing month (1st of month)") #unused
@@ -29,6 +28,7 @@ class PaymentRecord(models.Model):
     payment_date = models.DateField(null=True, blank=True, help_text="Date when the payment was actually received")
     bill_given_date = models.DateField(null=True, blank=True, help_text="Date when the bill was given")
     received_from = models.CharField(max_length=100, blank=True, help_text="Name of the person who made the payment")
+    mode_of_payment = models.CharField(max_length=20, choices=[('Cash', 'Cash'), ('Online', 'Online')], blank=True, null=True, help_text="Mode of payment", default='Cash')
     updated_at = models.DateTimeField(auto_now=True)
 
 
