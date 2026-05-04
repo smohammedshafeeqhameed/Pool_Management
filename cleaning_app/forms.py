@@ -19,6 +19,12 @@ class VillaForm(forms.ModelForm):
             raise forms.ValidationError("Phone number cannot contain alphabets.")
         return phone_number
 
+    def clean_location(self):
+        location = self.cleaned_data.get('location')
+        if location and not any(char.isalnum() for char in location):
+            raise forms.ValidationError("Location cannot contain only special characters.")
+        return location
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['name'].required = True

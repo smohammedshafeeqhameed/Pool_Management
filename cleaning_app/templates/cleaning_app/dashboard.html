@@ -108,9 +108,9 @@
 
     <!-- Clear Filters -->
     <div class="filter-group" style="margin-left: auto; align-self: flex-start; margin-top: 1.4rem;">
-        <a href="{% url 'dashboard' %}" class="btn btn-light btn-sm" style="background: transparent; border: 1.5px solid var(--border); padding: 0.4rem 0.8rem; font-size: 0.8rem; color: var(--text-muted); text-decoration: none; border-radius: var(--radius-sm); transition: all 0.2s ease;">
+        <button type="button" onclick="clearFilters()" class="btn btn-light btn-sm" style="background: transparent; border: 1.5px solid var(--border); padding: 0.4rem 0.8rem; font-size: 0.8rem; color: var(--text-muted); text-decoration: none; border-radius: var(--radius-sm); transition: all 0.2s ease; cursor: pointer;">
             ✕ Clear Filters
-        </a>
+        </button>
     </div>
 
 </div><!-- /.filter-bar -->
@@ -197,6 +197,21 @@ document.addEventListener('click', function(event) {
         }
     }
 });
+
+function clearFilters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.delete('payment_status');
+    urlParams.delete('bill_given');
+    urlParams.delete('search');
+    // Ensure selected_year and selected_months are present so it doesn't trigger a redirect to defaults
+    if (!urlParams.has('selected_year')) {
+        urlParams.append('selected_year', new Date().getFullYear());
+    }
+    if (!urlParams.has('selected_months')) {
+        urlParams.append('selected_months', new Date().getMonth() + 1);
+    }
+    window.location.search = urlParams.toString();
+}
 </script>
 
 {% endblock %}

@@ -21,6 +21,12 @@ def register(request):
 
 @login_required
 def dashboard(request):
+    if not request.GET:
+        today = datetime.date.today()
+        # Redirect to the default dashboard view (current month, unpaid)
+        redirect_url = f"{reverse('dashboard')}?selected_year={today.year}&selected_months={today.month}&payment_status=not_paid"
+        return redirect(redirect_url)
+
     today = datetime.date.today()
     selected_y = request.GET.get('selected_year')
     y_val = int(selected_y) if selected_y and selected_y.isdigit() else today.year
