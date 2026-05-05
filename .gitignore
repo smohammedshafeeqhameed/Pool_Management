@@ -1,5 +1,21 @@
-venv
-__pycache__/
+venv/
 .env
 db.sqlite3
 
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Static and media files collected in production
+staticfiles/
+media/
+
+# Environment and IDEs
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Logs
+*.log
