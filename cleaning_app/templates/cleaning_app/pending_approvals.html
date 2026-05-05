@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Approvals - Company Name{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 30px;">
+    <div class="header-content">
+        <h1 class="h1">Pending Approvals</h1>
+        <p class="text-secondary">Approve or reject new user registration requests.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="card">
+    {% if pending_users %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Date Joined</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in pending_users %}
+                    <tr>
+                        <td>
+                            <div class="font-medium text-primary">{{ user.username }}</div>
+                        </td>
+                        <td>{{ user.date_joined|date:"d M Y, H:i" }}</td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <form method="post" action="{% url 'approve_user' user.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+                                </form>
+                                <form method="post" action="{% url 'reject_user' user.id %}" onsubmit="return confirm('Are you sure you want to reject and delete this user?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline btn-sm" style="border-color: var(--error); color: var(--error);">Reject</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="padding: 40px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+            <h3 class="h3">No pending approvals</h3>
+            <p class="text-secondary">All registration requests have been processed.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% if notifications %}
+<div class="card" style="margin-top: 24px;">
+    <h2 class="h3" style="margin-bottom: 16px;">Recent Signup Notifications</h2>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+        {% for note in notifications %}
+            <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid var(--primary);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="font-medium">{{ note.message }}</span>
+                    <span class="text-secondary" style="font-size: 12px;">{{ note.created_at|timesince }} ago</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

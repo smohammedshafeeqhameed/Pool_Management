@@ -17,6 +17,9 @@
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <span class="nav-user">{{ user.username }}</span>
+                {% if user.is_superuser %}
+                <a href="{% url 'pending_approvals' %}" class="btn btn-ghost btn-sm">Approvals</a>
+                {% endif %}
                 {% block dashboard_nav_btn %}
                 <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm">Dashboard</a>
                 {% endblock %}

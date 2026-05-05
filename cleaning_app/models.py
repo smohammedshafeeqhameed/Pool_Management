@@ -56,3 +56,14 @@ class PaymentRecord(models.Model):
     def __str__(self):
         return f"{self.villa.name} - {self.month_year.strftime('%B %Y')}"
 
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications', help_text="User who triggered the notification (e.g., new signup)")
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    notification_type = models.CharField(max_length=50, choices=[('new_signup', 'New Signup')], default='new_signup')
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.message[:30]}"
+

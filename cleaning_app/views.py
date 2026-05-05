@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-from .models import Villa, PaymentRecord
+from django.contrib.auth.models import User
+from .models import Villa, PaymentRecord, Notification
 from .forms import VillaForm, PaymentPeriodForm, PaymentRecordForm
 import datetime
 
@@ -12,19 +13,61 @@ def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('dashboard')
+            user = form.save(commit=False)
+            user.is_active = False  # Deactivate user until approved
+            user.save()
+            
+            # Create notification for superusers
+            Notification.objects.create(
+                user=user,
+                message=f"New user registered: {user.username}. Needs approval.",
+                notification_type='new_signup'
+            )
+            
+            return redirect('waiting_for_approval')
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
+
+def waiting_for_approval(request):
+    return render(request, 'cleaning_app/waiting_for_approval.html')
+
+@user_passes_test(lambda u: u.is_superuser)
+def pending_approvals(request):
+    pending_users = User.objects.filter(is_active=False)
+    notifications = Notification.objects.filter(is_read=False, notification_type='new_signup')
+    return render(request, 'cleaning_app/pending_approvals.html', {
+        'pending_users': pending_users,
+        'notifications': notifications
+    })
+
+@user_passes_test(lambda u: u.is_superuser)
+def approve_user(request, user_id):
+    user_to_approve = get_object_or_404(User, pk=user_id)
+    user_to_approve.is_active = True
+    user_to_approve.save()
+    
+    # Mark relevant notifications as read
+    Notification.objects.filter(user=user_to_approve, notification_type='new_signup').update(is_read=True)
+    
+    messages.success(request, f"User {user_to_approve.username} has been approved.")
+    return redirect('pending_approvals')
+
+@user_passes_test(lambda u: u.is_superuser)
+def reject_user(request, user_id):
+    user_to_reject = get_object_or_404(User, pk=user_id)
+    username = user_to_reject.username
+    user_to_reject.delete()
+    
+    messages.warning(request, f"User {username} has been rejected and deleted.")
+    return redirect('pending_approvals')
 
 @login_required
 def dashboard(request):
     if not request.GET:
         today = datetime.date.today()
-        # Redirect to the default dashboard view (current month, unpaid)
-        redirect_url = f"{reverse('dashboard')}?selected_year={today.year}&selected_months={today.month}&payment_status=not_paid"
+        # Redirect to the default dashboard view (current month)
+        redirect_url = f"{reverse('dashboard')}?selected_year={today.year}&selected_months={today.month}"
         return redirect(redirect_url)
 
     today = datetime.date.today()
