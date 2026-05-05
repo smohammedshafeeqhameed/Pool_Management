@@ -1,0 +1,1 @@
+web: gunicorn pool_manager.wsgi:application
