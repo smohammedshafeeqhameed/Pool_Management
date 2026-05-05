@@ -1,1 +1,1 @@
-web: gunicorn pool_manager.wsgi:application
+web:python manage.py migrate && python manage.py collectstatic --noinput && gunicorn pool_manager.wsgi:application
