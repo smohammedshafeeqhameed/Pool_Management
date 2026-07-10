@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 class Villa(models.Model):
     name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=15, blank=True, unique=True, help_text="Contact phone number")
+    phone_number = models.CharField(max_length=15, blank=True, null=True, unique=True, help_text="Contact phone number")
     location = models.CharField(max_length=255, blank=True, null=True, help_text="Location details")
 
     
